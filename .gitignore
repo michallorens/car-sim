@@ -1,1 +1,6 @@
 /target/
+
+.project
+carsim.iml
+.idea
+JBox2d.log
