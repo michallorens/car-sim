@@ -6,7 +6,10 @@ public class FixtureUserData {
 	public FixtureUserData(FixtureUserDataType type) {
 		this.type = type;
 	}
-	
+
+	public FixtureUserData() {
+	}
+
 	public FixtureUserDataType getType() {
 		return type;
 	}
