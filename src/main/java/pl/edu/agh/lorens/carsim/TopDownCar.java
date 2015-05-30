@@ -105,8 +105,12 @@ public class TopDownCar extends TestbedTest {
     public synchronized void step(TestbedSettings settings) {
         super.step(settings);
         car.update(controlState);
-        
+
+        Vec2 oldViewCenter = getCamera().getTransform().getCenter();
+        Vec2 posOfCarVerySoon = car.body.getPosition().add(car.body.getLinearVelocity().mul(0.25f));
         //TODO add debug info
+//        setCamera(posOfCarVerySoon);
+        getCamera().setCamera(oldViewCenter.mul(0.9f).add(posOfCarVerySoon.mul(0.1f)), 2.8f);
     }
 
 	@Override
