@@ -2,6 +2,7 @@ package pl.edu.agh.lorens.carsim;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Vector;
 
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.common.Vec2;
@@ -18,6 +19,10 @@ public class SimTire {
 	private float currentTraction;
 	private float maxLateralImpulse;
     Set<GroundAreaFUD> groundAreas = new HashSet<GroundAreaFUD>();
+    private float currentDrag;
+
+    private float lastDriveImpulse;
+    private float lastLateralFrictionImpulse;
 	
 	SimTire(World world) {
 		BodyDef bodyDef = new BodyDef();
@@ -30,6 +35,7 @@ public class SimTire {
 		
 		body.setUserData(this);
 		currentTraction = 1;
+        currentDrag = 1;
 	}
 	
 	void setCharacteristics(float maxForwardSpeed, float maxBackwardSpeed, float maxDriveForce, float maxLateralImpulse) {
@@ -41,22 +47,27 @@ public class SimTire {
 	
 	void addGroundArea(GroundAreaFUD ga) {
 		groundAreas.add(ga);
-		updateTraction();
+        updateTractionAndDrag();
 	}
 	
     void removeGroundArea(GroundAreaFUD ga) {
     	groundAreas.remove(ga);
-    	updateTraction();
+        updateTractionAndDrag();
     }
     
-    void updateTraction() {
-        if(groundAreas.isEmpty())
+    void updateTractionAndDrag() {
+        if(groundAreas.isEmpty()){
             currentTraction = 1;
+            currentDrag = 1;
+        }
         else {
             currentTraction = 0;
+            currentDrag = 1;
             for(GroundAreaFUD ga : groundAreas) {
                 if(ga.frictionModifier > currentTraction)
                     currentTraction = ga.frictionModifier;
+                if(ga.dragModifier > currentDrag)
+                    currentDrag = ga.dragModifier;
             }
         }
     }
@@ -74,10 +85,10 @@ public class SimTire {
 	
 	void updateFriction() {
 		//lateral linear velocity
-		Vec2 impulse = getLateralVelocity().negate().mul(body.getMass());
-        if(impulse.length() > maxLateralImpulse )
-        	impulse = impulse.mul(maxLateralImpulse / impulse.length());
-		body.applyLinearImpulse(impulse, body.getWorldCenter(), true);
+//		Vec2 impulse = getLateralVelocity().negate().mul(body.getMass());
+//        if(impulse.length() > maxLateralImpulse )
+//        	impulse = impulse.mul(maxLateralImpulse / impulse.length());
+//		body.applyLinearImpulse(impulse, body.getWorldCenter(), true);
 
 		//angular velocity
 		body.applyAngularImpulse(currentTraction * 0.1f * body.getInertia() * -body.getAngularVelocity());
@@ -85,7 +96,7 @@ public class SimTire {
 		//forward linear velocity
 		Vec2 currentForwardNormal = getForwardVelocity();
 		float currentForwardSpeed = currentForwardNormal.normalize();
-		float dragForceMagnitude = -2 * currentForwardSpeed;
+		float dragForceMagnitude = -0.25F * currentForwardSpeed;
 		body.applyForce(currentForwardNormal.mul(currentTraction * dragForceMagnitude), body.getWorldCenter());
 	}
 	
@@ -93,8 +104,11 @@ public class SimTire {
         //find desired speed
         float desiredSpeed = 0;
         int control = controlState & (SimControl.UP.getDirection()|SimControl.DOWN.getDirection());
-        if(SimControl.UP.getDirection() == control) desiredSpeed = maxForwardSpeed;
-        else if(SimControl.DOWN.getDirection() == control) desiredSpeed = maxBackwardSpeed;
+
+        if(SimControl.UP.getDirection() == control)
+            desiredSpeed = maxForwardSpeed;
+        else if(SimControl.DOWN.getDirection() == control)
+            desiredSpeed = maxBackwardSpeed;
 
         //find current speed in forward direction
         Vec2 currentForwardNormal = body.getWorldVector(new Vec2(0,1));
@@ -102,13 +116,39 @@ public class SimTire {
 
         //apply necessary force
         float force = 0;
-        if(desiredSpeed > currentSpeed)
-            force = maxDriveForce;
-        else if(desiredSpeed < currentSpeed)
-            force = -maxDriveForce;
-        else
-            return;
-        body.applyForce(currentForwardNormal.mul(currentTraction * force), body.getWorldCenter());
+        if(control > 0){
+            if(desiredSpeed > currentSpeed)
+                force = maxDriveForce;
+            else if(desiredSpeed < currentSpeed)
+                force = -maxDriveForce * 0.5f;
+        }
+
+        float speedFactor = currentSpeed / 120;
+        Vec2 driveImpulse = currentForwardNormal.mul(force / 60.0f);
+
+        if(driveImpulse.length() > maxLateralImpulse){
+            driveImpulse.mul(maxLateralImpulse / driveImpulse.length());
+        }
+
+        Vec2 lateralFrictionImpulse = getLateralVelocity().mul(-body.getMass());
+        float lateralImpulseAvailable = maxLateralImpulse;
+        lateralImpulseAvailable *= 2.0f * speedFactor;
+
+        if ( lateralImpulseAvailable < 0.5f * maxLateralImpulse )
+            lateralImpulseAvailable = 0.5f * maxLateralImpulse;
+        /*else if ( lateralImpulseAvailable > m_maxLateralImpulse )
+            lateralImpulseAvailable = m_maxLateralImpulse;*/
+        if ( lateralFrictionImpulse.length() > lateralImpulseAvailable )
+            lateralFrictionImpulse.mul(lateralImpulseAvailable / lateralFrictionImpulse.length());
+
+        lastDriveImpulse = driveImpulse.length();
+        lastLateralFrictionImpulse = lateralFrictionImpulse.length();
+
+        Vec2 impulse = driveImpulse.add(lateralFrictionImpulse);
+        if ( impulse.length() > maxLateralImpulse )
+            impulse.mul(maxLateralImpulse / impulse.length());
+
+        body.applyLinearImpulse(impulse.mul(currentTraction), body.getWorldCenter(), true); //TODO: zmienic
     }
 
     void updateTurn(int controlState) {

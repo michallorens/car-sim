@@ -43,3 +43,19 @@ java.io.FileNotFoundException: dominos.box2d (Nie ma takiego pliku ani katalogu)
 	at org.jbox2d.testbed.framework.TestbedController.run(TestbedController.java:402)
 	at java.lang.Thread.run(Thread.java:745)
 2015-04-27 22:13:48,859 [Testbed] DEBUG org.jbox2d.testbed.framework.j2d.TestPanelJ2D.render(TestPanelJ2D.java:93) - dbImage is null, creating a new one
+2015-05-12 09:44:05,439 [Testbed] DEBUG org.jbox2d.testbed.framework.j2d.TestPanelJ2D.render(TestPanelJ2D.java:93) - dbImage is null, creating a new one
+2015-05-30 16:02:56,634 [Testbed] DEBUG org.jbox2d.testbed.framework.j2d.TestPanelJ2D.render(TestPanelJ2D.java:93) - dbImage is null, creating a new one
+2015-05-30 16:14:50,828 [Testbed] DEBUG org.jbox2d.testbed.framework.j2d.TestPanelJ2D.render(TestPanelJ2D.java:93) - dbImage is null, creating a new one
+2015-05-30 18:31:40,869 [Testbed] DEBUG org.jbox2d.testbed.framework.j2d.TestPanelJ2D.render(TestPanelJ2D.java:93) - dbImage is null, creating a new one
+2015-05-30 18:32:49,645 [Testbed] DEBUG org.jbox2d.testbed.framework.j2d.TestPanelJ2D.render(TestPanelJ2D.java:93) - dbImage is null, creating a new one
+2015-05-30 18:34:06,050 [Testbed] DEBUG org.jbox2d.testbed.framework.j2d.TestPanelJ2D.render(TestPanelJ2D.java:93) - dbImage is null, creating a new one
+2015-05-30 18:36:21,960 [Testbed] DEBUG org.jbox2d.testbed.framework.j2d.TestPanelJ2D.render(TestPanelJ2D.java:93) - dbImage is null, creating a new one
+2015-05-30 18:37:06,875 [Testbed] DEBUG org.jbox2d.testbed.framework.j2d.TestPanelJ2D.render(TestPanelJ2D.java:93) - dbImage is null, creating a new one
+2015-05-30 18:38:42,170 [Testbed] DEBUG org.jbox2d.testbed.framework.j2d.TestPanelJ2D.render(TestPanelJ2D.java:93) - dbImage is null, creating a new one
+2015-05-30 18:39:46,343 [Testbed] DEBUG org.jbox2d.testbed.framework.j2d.TestPanelJ2D.render(TestPanelJ2D.java:93) - dbImage is null, creating a new one
+2015-05-30 18:43:37,419 [Testbed] DEBUG org.jbox2d.testbed.framework.j2d.TestPanelJ2D.render(TestPanelJ2D.java:93) - dbImage is null, creating a new one
+2015-05-30 18:47:39,534 [Testbed] DEBUG org.jbox2d.testbed.framework.j2d.TestPanelJ2D.render(TestPanelJ2D.java:93) - dbImage is null, creating a new one
+2015-05-30 18:47:46,861 [Testbed] DEBUG org.jbox2d.testbed.framework.j2d.TestPanelJ2D.render(TestPanelJ2D.java:93) - dbImage is null, creating a new one
+2015-05-30 23:52:20,427 [Testbed] DEBUG org.jbox2d.testbed.framework.j2d.TestPanelJ2D.render(TestPanelJ2D.java:93) - dbImage is null, creating a new one
+2015-05-30 23:56:26,241 [Testbed] DEBUG org.jbox2d.testbed.framework.j2d.TestPanelJ2D.render(TestPanelJ2D.java:93) - dbImage is null, creating a new one
+2015-05-31 00:11:12,697 [Testbed] DEBUG org.jbox2d.testbed.framework.j2d.TestPanelJ2D.render(TestPanelJ2D.java:93) - dbImage is null, creating a new one

@@ -23,7 +23,7 @@ public class SimCar {
 		BodyDef bodyDef = new BodyDef();
 		bodyDef.type = BodyType.DYNAMIC;
 		body = world.createBody(bodyDef);
-		body.setAngularDamping(3);
+		body.setAngularDamping(5);
 		
 		Vec2[] vertices = new Vec2[8];
         vertices[0] = new Vec2(1.5f,   0f);
@@ -46,10 +46,10 @@ public class SimCar {
         jointDef.upperAngle = 0;
         jointDef.localAnchorB.setZero();
 
-        float maxForwardSpeed = 250;
+        float maxForwardSpeed = 300;
         float maxBackwardSpeed = -40;
-        float backTireMaxDriveForce = 300;
-        float frontTireMaxDriveForce = 500;
+        float backTireMaxDriveForce = 600;
+        float frontTireMaxDriveForce = 400;
         float backTireMaxLateralImpulse = 8.5f;
         float frontTireMaxLateralImpulse = 7.5f;
         
@@ -102,5 +102,10 @@ public class SimCar {
         float newAngle = angleNow + angleToTurn;
         flJoint.setLimits(newAngle, newAngle);
         frJoint.setLimits(newAngle, newAngle);
+    }
+
+    public Vec2 getForwardVelocity(){
+        Vec2 currentForwardNormal = body.getWorldVector(new Vec2(0,1));
+        return currentForwardNormal.mul(Vec2.dot(currentForwardNormal, body.getLinearVelocity()));
     }
 }
