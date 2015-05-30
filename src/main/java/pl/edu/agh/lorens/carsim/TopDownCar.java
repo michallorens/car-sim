@@ -16,10 +16,13 @@ public class TopDownCar extends TestbedTest {
     Body groundBody;
     SimCar car;
 
-    
-	@Override
-	public void initTest(boolean deserialized) {
-		getWorld().setGravity(new Vec2(0,0));
+    public void createRaceTrack(){
+        Jb2dJson json = new Jb2dJson();
+        StringBuilder stringBuilder = new StringBuilder();
+        json.readFromFile("racetrack.json", stringBuilder, getWorld());
+        System.out.println("error: "+stringBuilder.toString());
+        getWorld().setContactListener(new CarContactListener());
+        getWorld().setDebugDraw(getDebugDraw());
 
         BodyDef bodyDef = new BodyDef();
         groundBody = getWorld().createBody(bodyDef);
@@ -96,39 +99,6 @@ public class TopDownCar extends TestbedTest {
 	        case 'w' : controlState &= ~SimControl.UP.getDirection(); break;
 	        case 's' : controlState &= ~SimControl.DOWN.getDirection(); break;
         }
-    }
-	
-    void handleContact(Contact contact, boolean began)
-    {
-        Fixture a = contact.getFixtureA();
-        Fixture b = contact.getFixtureB();
-        FixtureUserData fudA = (FixtureUserData) a.getUserData();
-        FixtureUserData fudB = (FixtureUserData) b.getUserData();
-
-        if(fudA == null || fudB == null)
-            return;
-
-        if(fudA.getType() == FixtureUserDataType.FUD_CAR_TIRE || fudB.getType() == FixtureUserDataType.FUD_GROUND_AREA)
-            tireVsGroundArea(a, b, began);
-        else if(fudA.getType() == FixtureUserDataType.FUD_GROUND_AREA || fudB.getType() == FixtureUserDataType.FUD_CAR_TIRE)
-            tireVsGroundArea(b, a, began);
-    }
-    
-    void BeginContact(Contact contact) {
-    	handleContact(contact, true);
-    }
-    void EndContact(Contact contact) {
-    	handleContact(contact, false);
-    }
-    
-    void tireVsGroundArea(Fixture tireFixture, Fixture groundAreaFixture, boolean began)
-    {
-        SimTire tire = (SimTire) tireFixture.getBody().getUserData();
-        GroundAreaFUD gaFud = (GroundAreaFUD) groundAreaFixture.getUserData();
-        if(began)
-            tire.addGroundArea(gaFud);
-        else
-            tire.removeGroundArea(gaFud);
     }
 
     @Override
