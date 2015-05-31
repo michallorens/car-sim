@@ -49,7 +49,7 @@ public class SimCar {
         jointDef.upperAngle = 0;
         jointDef.localAnchorB.setZero();
 
-        float maxForwardSpeed = 250;
+        float maxForwardSpeed = 300;
         float maxBackwardSpeed = -40;
         float backTireMaxDriveForce = 300;
         float frontTireMaxDriveForce = 500;

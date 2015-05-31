@@ -1,6 +1,7 @@
 package pl.edu.agh.lorens.carsim;
 
 import org.iforce2d.Jb2dJson;
+import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.common.Color3f;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.*;
@@ -47,10 +48,20 @@ public class TopDownCar extends TestbedTest {
 
         getWorld().setGravity(new Vec2(0,0));
     }
-    
-	@Override
+    private static final float DEGTORAD = 0.0174532925199432957f;
+
+    @Override
 	public void initTest(boolean deserialized) {
         createRaceTrack();
+
+        PolygonShape polygonShape = new PolygonShape();
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = polygonShape;
+        fixtureDef.isSensor = true;
+        polygonShape.setAsBox(1,30, new Vec2(), 68*DEGTORAD);
+        Fixture groundAreaFixture = groundBody.createFixture(fixtureDef);
+        groundAreaFixture.setUserData(new GroundLineFUD());
+
         car = new SimCar(getWorld());
 
         controlState = 0;

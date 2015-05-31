@@ -33,6 +33,8 @@ public class CarContactListener implements ContactListener {
         if(fudA == null || fudB == null)
             return;
 
+        System.out.println(a.toString()+ " " + b.toString() + " " + fudA.toString() + " " + fudB.toString());
+
         if(fudA.getType() == FixtureUserDataType.FUD_CAR_TIRE && fudB.getType() == FixtureUserDataType.FUD_GROUND_AREA)
             tireVsGroundArea(a, b, began);
         else if(fudA.getType() == FixtureUserDataType.FUD_GROUND_AREA && fudB.getType() == FixtureUserDataType.FUD_CAR_TIRE)

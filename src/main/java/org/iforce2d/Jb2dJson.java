@@ -1301,12 +1301,12 @@ public class Jb2dJson {
 			// else if ( value[name].isString() )
 			// return hexToFloat( value[name].asString() );
 			else{
-                System.out.println("obj: "+obj.toString()+ " " + obj.getClass());
+//                System.out.println("obj: "+obj.toString()+ " " + obj.getClass());
                 if(obj instanceof String){
                     Long i = Long.parseLong((String)obj, 16);
                     Float f = Float.intBitsToFloat(i.intValue());
-                    System.out.println(f);
-                    System.out.println(Long.toHexString(Float.floatToIntBits(f)));
+//                    System.out.println(f);
+//                    System.out.println(Long.toHexString(Float.floatToIntBits(f)));
                     return f;
                 } else {
                     return ((Number) obj).floatValue();
