@@ -1,17 +1,14 @@
 package pl.edu.agh.lorens.carsim;
 
 import org.iforce2d.Jb2dJson;
-import org.jbox2d.collision.shapes.PolygonShape;
+import org.jbox2d.common.Color3f;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.*;
-import org.jbox2d.dynamics.contacts.Contact;
 import org.jbox2d.dynamics.joints.FrictionJointDef;
 import org.jbox2d.testbed.framework.TestbedSettings;
 import org.jbox2d.testbed.framework.TestbedTest;
 
 public class TopDownCar extends TestbedTest {
-	private static final float DEGTORAD = 0.0174532925199432957f;
-
     int controlState;
     Body groundBody;
     SimCar car;
@@ -35,8 +32,6 @@ public class TopDownCar extends TestbedTest {
         frictionJointDef.maxTorque = 400;
         frictionJointDef.collideConnected = true;
 
-
-
         Body[] barrelBodies;
         barrelBodies = json.getBodiesByName("barrel");
         for (Body barrelBody : barrelBodies) {
@@ -55,25 +50,6 @@ public class TopDownCar extends TestbedTest {
     
 	@Override
 	public void initTest(boolean deserialized) {
-//		getWorld().setGravity(new Vec2(0,0));
-//        getWorld().setContactListener(new CarContactListener());
-//
-//        BodyDef bodyDef = new BodyDef();
-//        groundBody = getWorld().createBody(bodyDef);
-//
-//        PolygonShape polygonShape = new PolygonShape();
-//        FixtureDef fixtureDef = new FixtureDef();
-//        fixtureDef.shape = polygonShape;
-//        fixtureDef.isSensor = true;
-//
-//        polygonShape.setAsBox(9, 7, new Vec2(-10, 15), 20*DEGTORAD);
-//        Fixture groundAreaFixture = groundBody.createFixture(fixtureDef);
-//        groundAreaFixture.setUserData(new GroundAreaFUD(0.5f, 30));
-//
-//        polygonShape.setAsBox(9, 5, new Vec2(5, 20), -40*DEGTORAD);
-//        groundAreaFixture = groundBody.createFixture(fixtureDef);
-//        groundAreaFixture.setUserData(new GroundAreaFUD(0.2f, 30));
-
         createRaceTrack();
         car = new SimCar(getWorld());
 
@@ -82,22 +58,22 @@ public class TopDownCar extends TestbedTest {
 
 	@Override
 	public void keyPressed(char argKeyChar, int argKeyCode) {
-        switch (argKeyChar) {
-	        case 'a' : controlState |= SimControl.LEFT.getDirection(); break;
-	        case 'd' : controlState |= SimControl.RIGHT.getDirection(); break;
-	        case 'w' : controlState |= SimControl.UP.getDirection(); break;
-	        case 's' : controlState |= SimControl.DOWN.getDirection(); break;
+        switch (argKeyCode) {
+	        case 37 : controlState |= SimControl.LEFT.getDirection(); break;
+	        case 38 : controlState |= SimControl.UP.getDirection(); break;
+	        case 39 : controlState |= SimControl.RIGHT.getDirection(); break;
+	        case 40 : controlState |= SimControl.DOWN.getDirection(); break;
         }
     }
 
 	@Override
 	public void keyReleased(char argKeyChar, int argKeyCode) {
 		super.keyReleased(argKeyChar, argKeyCode);
-        switch(argKeyChar) {
-	        case 'a' : controlState &= ~SimControl.LEFT.getDirection(); break;
-	        case 'd' : controlState &= ~SimControl.RIGHT.getDirection(); break;
-	        case 'w' : controlState &= ~SimControl.UP.getDirection(); break;
-	        case 's' : controlState &= ~SimControl.DOWN.getDirection(); break;
+        switch(argKeyCode) {
+	        case 37 : controlState &= ~SimControl.LEFT.getDirection(); break;
+	        case 38 : controlState &= ~SimControl.UP.getDirection(); break;
+	        case 39 : controlState &= ~SimControl.RIGHT.getDirection(); break;
+	        case 40 : controlState &= ~SimControl.DOWN.getDirection(); break;
         }
     }
 
@@ -106,10 +82,44 @@ public class TopDownCar extends TestbedTest {
         super.step(settings);
         car.update(controlState);
 
+        int rearImpulse = settings.getSetting("Rear wheel impulse").value;
+        int frontImpulse = settings.getSetting("Front wheel impulse").value;
+        int rearDrive = settings.getSetting("Rear wheel drive force").value;
+        int frontDrive = settings.getSetting("Front wheel drive force").value;
+        int backwardSpeed = settings.getSetting("Backward speed").value;
+        int forwardSpeed = settings.getSetting("Forward speed").value;
+
+        car.getTires().get(0).setMaxLateralImpulse(rearImpulse);
+        car.getTires().get(0).setMaxDriveForce(rearDrive);
+        car.getTires().get(0).setMaxBackwardSpeed(backwardSpeed);
+        car.getTires().get(0).setMaxForwardSpeed(forwardSpeed);
+        car.getTires().get(1).setMaxLateralImpulse(rearImpulse);
+        car.getTires().get(1).setMaxDriveForce(rearDrive);
+        car.getTires().get(1).setMaxBackwardSpeed(backwardSpeed);
+        car.getTires().get(1).setMaxForwardSpeed(forwardSpeed);
+        car.getTires().get(2).setMaxLateralImpulse(frontImpulse);
+        car.getTires().get(2).setMaxDriveForce(frontDrive);
+        car.getTires().get(2).setMaxBackwardSpeed(backwardSpeed);
+        car.getTires().get(2).setMaxForwardSpeed(forwardSpeed);
+        car.getTires().get(3).setMaxLateralImpulse(frontImpulse);
+        car.getTires().get(3).setMaxDriveForce(rearDrive);
+        car.getTires().get(3).setMaxBackwardSpeed(backwardSpeed);
+        car.getTires().get(3).setMaxForwardSpeed(forwardSpeed);
+
         Vec2 oldViewCenter = getCamera().getTransform().getCenter();
         Vec2 posOfCarVerySoon = car.body.getPosition().add(car.body.getLinearVelocity().mul(0.25f));
+        getDebugDraw().drawString(new Vec2(5, 75), "car velocity:  " + String.valueOf(
+        		(int) car.getForwardVelocity().length()), Color3f.WHITE);
+        getDebugDraw().drawString(new Vec2(5, 95), "tire lateral speed:", Color3f.WHITE);
+        getDebugDraw().drawString(new Vec2(5, 115), "rear-left     " + String.valueOf(
+        		(int) car.getTires().get(0).getFriction()), Color3f.WHITE);
+        getDebugDraw().drawString(new Vec2(5, 130), "rear-right    " + String.valueOf(
+        		(int) car.getTires().get(1).getFriction()), Color3f.WHITE);
+        getDebugDraw().drawString(new Vec2(5, 145), "front-left      " + String.valueOf(
+        		(int) car.getTires().get(2).getFriction()), Color3f.WHITE);
+        getDebugDraw().drawString(new Vec2(5, 160), "front-right     " + String.valueOf(
+        		(int) car.getTires().get(3).getFriction()), Color3f.WHITE);
         //TODO add debug info
-//        setCamera(posOfCarVerySoon);
         getCamera().setCamera(oldViewCenter.mul(0.9f).add(posOfCarVerySoon.mul(0.1f)), 2.8f);
     }
 

@@ -13,26 +13,15 @@ public class CarContactListener implements ContactListener {
 
     public void beginContact(Contact contact) {
         handleContact(contact, true);
-        System.out.println("beginContact");
-
     }
 
     public void endContact(Contact contact) {
         handleContact(contact, false);
-        System.out.println("endContact");
-
-
     }
 
-    public void preSolve(Contact contact, Manifold manifold) {
-        System.out.println("preSolve");
+    public void preSolve(Contact contact, Manifold manifold) { }
 
-    }
-
-    public void postSolve(Contact contact, ContactImpulse contactImpulse) {
-        System.out.println("postSolve");
-
-    }
+    public void postSolve(Contact contact, ContactImpulse contactImpulse) { }
 
     void handleContact(Contact contact, boolean began)
     {

@@ -19,11 +19,14 @@ public class SimCar {
 	private RevoluteJoint flJoint, frJoint;
 	private static final float DEGTORAD = 0.0174532925199432957f;
 	
+	private static final float LOCK_ANGLE = 40;
+	private static final float TURN_SPEED_PER_SEC = 320;
+	
 	public SimCar(World world) {
 		BodyDef bodyDef = new BodyDef();
 		bodyDef.type = BodyType.DYNAMIC;
 		body = world.createBody(bodyDef);
-		body.setAngularDamping(5);
+		body.setAngularDamping(3);
 		
 		Vec2[] vertices = new Vec2[8];
         vertices[0] = new Vec2(1.5f,   0f);
@@ -46,10 +49,10 @@ public class SimCar {
         jointDef.upperAngle = 0;
         jointDef.localAnchorB.setZero();
 
-        float maxForwardSpeed = 300;
+        float maxForwardSpeed = 250;
         float maxBackwardSpeed = -40;
-        float backTireMaxDriveForce = 600;
-        float frontTireMaxDriveForce = 400;
+        float backTireMaxDriveForce = 300;
+        float frontTireMaxDriveForce = 500;
         float backTireMaxLateralImpulse = 8.5f;
         float frontTireMaxLateralImpulse = 7.5f;
         
@@ -88,8 +91,8 @@ public class SimCar {
         for(SimTire tire : tires)
             tire.updateDrive(controlState);
 
-        float lockAngle = 35 * DEGTORAD;
-        float turnSpeedPerSec = 160 * DEGTORAD;//from lock to lock in 0.5 sec
+        float lockAngle = LOCK_ANGLE * DEGTORAD;
+        float turnSpeedPerSec = TURN_SPEED_PER_SEC * DEGTORAD;
         float turnPerTimeStep = turnSpeedPerSec / 60.0f;
         float desiredAngle = 0;
         int control = controlState & (SimControl.LEFT.getDirection()|SimControl.RIGHT.getDirection());
@@ -107,5 +110,9 @@ public class SimCar {
     public Vec2 getForwardVelocity(){
         Vec2 currentForwardNormal = body.getWorldVector(new Vec2(0,1));
         return currentForwardNormal.mul(Vec2.dot(currentForwardNormal, body.getLinearVelocity()));
+    }
+    
+    public List<SimTire> getTires() {
+    	return tires;
     }
 }

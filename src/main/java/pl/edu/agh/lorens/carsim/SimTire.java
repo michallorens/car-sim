@@ -2,7 +2,6 @@ package pl.edu.agh.lorens.carsim;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Vector;
 
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.common.Vec2;
@@ -23,6 +22,8 @@ public class SimTire {
 
     private float lastDriveImpulse;
     private float lastLateralFrictionImpulse;
+    
+    private float friction;
 	
 	SimTire(World world) {
 		BodyDef bodyDef = new BodyDef();
@@ -47,27 +48,22 @@ public class SimTire {
 	
 	void addGroundArea(GroundAreaFUD ga) {
 		groundAreas.add(ga);
-        updateTractionAndDrag();
+        updateTraction();
 	}
 	
     void removeGroundArea(GroundAreaFUD ga) {
     	groundAreas.remove(ga);
-        updateTractionAndDrag();
+        updateTraction();
     }
     
-    void updateTractionAndDrag() {
+    void updateTraction() {
         if(groundAreas.isEmpty()){
             currentTraction = 1;
-            currentDrag = 1;
-        }
-        else {
+        } else {
             currentTraction = 0;
-            currentDrag = 1;
             for(GroundAreaFUD ga : groundAreas) {
                 if(ga.frictionModifier > currentTraction)
                     currentTraction = ga.frictionModifier;
-                if(ga.dragModifier > currentDrag)
-                    currentDrag = ga.dragModifier;
             }
         }
     }
@@ -85,10 +81,10 @@ public class SimTire {
 	
 	void updateFriction() {
 		//lateral linear velocity
-//		Vec2 impulse = getLateralVelocity().negate().mul(body.getMass());
-//        if(impulse.length() > maxLateralImpulse )
-//        	impulse = impulse.mul(maxLateralImpulse / impulse.length());
-//		body.applyLinearImpulse(impulse, body.getWorldCenter(), true);
+		Vec2 impulse = getLateralVelocity().negate().mul(body.getMass());
+        if(impulse.length() > maxLateralImpulse)
+        	impulse = impulse.mul(maxLateralImpulse / impulse.length());
+		body.applyLinearImpulse(impulse.mul(currentTraction), body.getWorldCenter(), true);
 
 		//angular velocity
 		body.applyAngularImpulse(currentTraction * 0.1f * body.getInertia() * -body.getAngularVelocity());
@@ -96,8 +92,11 @@ public class SimTire {
 		//forward linear velocity
 		Vec2 currentForwardNormal = getForwardVelocity();
 		float currentForwardSpeed = currentForwardNormal.normalize();
-		float dragForceMagnitude = -0.25F * currentForwardSpeed;
+		float dragForceMagnitude = -2f * currentForwardSpeed;
+		
 		body.applyForce(currentForwardNormal.mul(currentTraction * dragForceMagnitude), body.getWorldCenter());
+
+		friction = getLateralVelocity().length();
 	}
 	
 	void updateDrive(int controlState) {
@@ -116,39 +115,43 @@ public class SimTire {
 
         //apply necessary force
         float force = 0;
-        if(control > 0){
-            if(desiredSpeed > currentSpeed)
-                force = maxDriveForce;
-            else if(desiredSpeed < currentSpeed)
-                force = -maxDriveForce * 0.5f;
+        if(control > 0) {
+	        if(desiredSpeed > currentSpeed)
+	            force = maxDriveForce;
+	        else if(desiredSpeed < currentSpeed)
+	            force = -maxDriveForce * 0.5f;
+	        else
+	        	return;
         }
+        
+        body.applyForce(currentForwardNormal.mul(currentTraction * force), body.getWorldCenter());
 
-        float speedFactor = currentSpeed / 120;
-        Vec2 driveImpulse = currentForwardNormal.mul(force / 60.0f);
-
-        if(driveImpulse.length() > maxLateralImpulse){
-            driveImpulse.mul(maxLateralImpulse / driveImpulse.length());
-        }
-
-        Vec2 lateralFrictionImpulse = getLateralVelocity().mul(-body.getMass());
-        float lateralImpulseAvailable = maxLateralImpulse;
-        lateralImpulseAvailable *= 2.0f * speedFactor;
-
-        if ( lateralImpulseAvailable < 0.5f * maxLateralImpulse )
-            lateralImpulseAvailable = 0.5f * maxLateralImpulse;
-        /*else if ( lateralImpulseAvailable > m_maxLateralImpulse )
-            lateralImpulseAvailable = m_maxLateralImpulse;*/
-        if ( lateralFrictionImpulse.length() > lateralImpulseAvailable )
-            lateralFrictionImpulse.mul(lateralImpulseAvailable / lateralFrictionImpulse.length());
-
-        lastDriveImpulse = driveImpulse.length();
-        lastLateralFrictionImpulse = lateralFrictionImpulse.length();
-
-        Vec2 impulse = driveImpulse.add(lateralFrictionImpulse);
-        if ( impulse.length() > maxLateralImpulse )
-            impulse.mul(maxLateralImpulse / impulse.length());
-
-        body.applyLinearImpulse(impulse.mul(currentTraction), body.getWorldCenter(), true); //TODO: zmienic
+//        float speedFactor = currentSpeed / 120;
+//        Vec2 driveImpulse = currentForwardNormal.mul(force / 60.0f);
+//
+//        if(driveImpulse.length() > maxLateralImpulse){
+//            driveImpulse.mul(maxLateralImpulse / driveImpulse.length());
+//        }
+//
+//        Vec2 lateralFrictionImpulse = getLateralVelocity().mul(-body.getMass());
+//        float lateralImpulseAvailable = maxLateralImpulse;
+//        lateralImpulseAvailable *= 2.0f * speedFactor;
+//
+//        if ( lateralImpulseAvailable < 0.5f * maxLateralImpulse )
+//            lateralImpulseAvailable = 0.5f * maxLateralImpulse;
+//        /*else if ( lateralImpulseAvailable > m_maxLateralImpulse )
+//            lateralImpulseAvailable = m_maxLateralImpulse;*/
+//        if ( lateralFrictionImpulse.length() > lateralImpulseAvailable )
+//            lateralFrictionImpulse.mul(lateralImpulseAvailable / lateralFrictionImpulse.length());
+//
+//        lastDriveImpulse = driveImpulse.length();
+//        lastLateralFrictionImpulse = lateralFrictionImpulse.length();
+//
+//        Vec2 impulse = driveImpulse.add(lateralFrictionImpulse);
+//        if ( impulse.length() > maxLateralImpulse )
+//            impulse.mul(maxLateralImpulse / impulse.length());
+//
+//        body.applyLinearImpulse(impulse.mul(currentTraction), body.getWorldCenter(), true); //TODO: zmienic
     }
 
     void updateTurn(int controlState) {
@@ -157,5 +160,25 @@ public class SimTire {
         if(SimControl.LEFT.getDirection() == control) desiredTorque = 15;
         if(SimControl.RIGHT.getDirection() == control) desiredTorque = -15;
         body.applyTorque(desiredTorque);
+    }
+    
+    public float getFriction() {
+    	return friction;
+    }
+    
+    public void setMaxLateralImpulse(int max) {
+    	this.maxLateralImpulse = max / 10.0f;
+    }
+    
+    public void setMaxDriveForce(int max) {
+    	this.maxDriveForce = max;
+    }
+    
+    public void setMaxForwardSpeed(int max) {
+    	this.maxForwardSpeed = max;
+    }
+    
+    public void setMaxBackwardSpeed(int max) {
+    	this.maxBackwardSpeed = max * -1.0f;
     }
 }
