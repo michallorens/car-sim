@@ -40,7 +40,7 @@ public class SimCar {
         
         PolygonShape polygonShape = new PolygonShape();
         polygonShape.set(vertices, 8);
-        body.createFixture(polygonShape, 0.1f);
+        body.createFixture(polygonShape, 0.1f).setUserData(new CarBodyFUD());;
         
         RevoluteJointDef jointDef = new RevoluteJointDef();
         jointDef.bodyA = body;

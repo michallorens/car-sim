@@ -11,6 +11,10 @@ import org.jbox2d.dynamics.contacts.Contact;
  */
 public class CarContactListener implements ContactListener {
 
+	private long lastUpdate;
+	private long previousTime;
+	private long currentTime;
+
     public void beginContact(Contact contact) {
         handleContact(contact, true);
     }
@@ -33,7 +37,14 @@ public class CarContactListener implements ContactListener {
         if(fudA == null || fudB == null)
             return;
 
-        System.out.println(a.toString()+ " " + b.toString() + " " + fudA.toString() + " " + fudB.toString());
+        if((fudA.getType() == FixtureUserDataType.FUD_CAR_BODY && fudB.getType() == FixtureUserDataType.FUD_FINISH)
+        		|| (fudA.getType() == FixtureUserDataType.FUD_FINISH && fudB.getType() == FixtureUserDataType.FUD_CAR_BODY)) {
+	        if(System.currentTimeMillis() - lastUpdate > 5000) {
+	        	lastUpdate = System.currentTimeMillis();
+	        	previousTime = currentTime;
+		        currentTime = System.currentTimeMillis();
+	        }
+        }
 
         if(fudA.getType() == FixtureUserDataType.FUD_CAR_TIRE && fudB.getType() == FixtureUserDataType.FUD_GROUND_AREA)
             tireVsGroundArea(a, b, began);
@@ -51,4 +62,12 @@ public class CarContactListener implements ContactListener {
         else
             tire.removeGroundArea(gaFud);
     }
+
+	public long getCurrentTime() {
+		return currentTime;
+	}
+
+	public long getPreviousTime() {
+		return previousTime;
+	}
 }

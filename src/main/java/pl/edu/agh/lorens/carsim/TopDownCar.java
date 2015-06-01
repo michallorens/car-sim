@@ -10,7 +10,9 @@ import org.jbox2d.testbed.framework.TestbedSettings;
 import org.jbox2d.testbed.framework.TestbedTest;
 
 public class TopDownCar extends TestbedTest {
-    int controlState;
+	CarContactListener ccl;
+	float bestTime = Float.POSITIVE_INFINITY;
+	int controlState;
     Body groundBody;
     SimCar car;
 
@@ -19,7 +21,7 @@ public class TopDownCar extends TestbedTest {
         StringBuilder stringBuilder = new StringBuilder();
         json.readFromFile("racetrack.json", stringBuilder, getWorld());
         System.out.println("error: "+stringBuilder.toString());
-        getWorld().setContactListener(new CarContactListener());
+        getWorld().setContactListener(ccl = new CarContactListener());
         getWorld().setDebugDraw(getDebugDraw());
 
         BodyDef bodyDef = new BodyDef();
@@ -60,7 +62,7 @@ public class TopDownCar extends TestbedTest {
         fixtureDef.isSensor = true;
         polygonShape.setAsBox(1,30, new Vec2(), 68*DEGTORAD);
         Fixture groundAreaFixture = groundBody.createFixture(fixtureDef);
-        groundAreaFixture.setUserData(new GroundLineFUD());
+        groundAreaFixture.setUserData(new FinishLineFUD());
 
         car = new SimCar(getWorld());
 
@@ -120,7 +122,7 @@ public class TopDownCar extends TestbedTest {
         Vec2 oldViewCenter = getCamera().getTransform().getCenter();
         Vec2 posOfCarVerySoon = car.body.getPosition().add(car.body.getLinearVelocity().mul(0.25f));
         getDebugDraw().drawString(new Vec2(5, 75), "car velocity:  " + String.valueOf(
-        		(int) car.getForwardVelocity().length()), Color3f.WHITE);
+        		(int) car.getForwardVelocity().length()), Color3f.BLUE);
         getDebugDraw().drawString(new Vec2(5, 95), "tire lateral speed:", Color3f.WHITE);
         getDebugDraw().drawString(new Vec2(5, 115), "rear-left     " + String.valueOf(
         		(int) car.getTires().get(0).getFriction()), Color3f.WHITE);
@@ -130,7 +132,15 @@ public class TopDownCar extends TestbedTest {
         		(int) car.getTires().get(2).getFriction()), Color3f.WHITE);
         getDebugDraw().drawString(new Vec2(5, 160), "front-right     " + String.valueOf(
         		(int) car.getTires().get(3).getFriction()), Color3f.WHITE);
-        //TODO add debug info
+        		
+        float prevTime = (ccl.getCurrentTime()  - ccl.getPreviousTime()) / 1000.0f;
+        if(prevTime < bestTime)
+        	bestTime = prevTime;
+        getDebugDraw().drawString(new Vec2(5, 180), "best time:      " + String.valueOf(bestTime), Color3f.WHITE);
+        getDebugDraw().drawString(new Vec2(5, 195), "previous time:  " + String.valueOf(prevTime), Color3f.WHITE);
+        getDebugDraw().drawString(new Vec2(5, 215), "lap time:       " + String.valueOf(
+        		(System.currentTimeMillis() - ccl.getCurrentTime()) / 1000.0f), Color3f.GREEN);
+
         getCamera().setCamera(oldViewCenter.mul(0.9f).add(posOfCarVerySoon.mul(0.1f)), 2.8f);
     }
 
